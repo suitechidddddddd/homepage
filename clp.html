@@ -6,13 +6,13 @@
 <title>CLP 컨테이너 로딩플랜 계산기</title>
 <style>
   :root{
-    --bg:#0f172a; --panel:#1e293b; --panel2:#273449; --line:#334155;
-    --text:#e2e8f0; --muted:#94a3b8; --accent:#38bdf8; --accent2:#22c55e;
-    --warn:#f59e0b; --danger:#ef4444;
+    --bg:#ffffff; --panel:#f6f9fd; --panel2:#eef3fb; --line:#d7e1f0;
+    --text:#1c2a45; --muted:#63728c; --accent:#15305c; --accent2:#15305c;
+    --warn:#c07d1a; --danger:#b23a48;
   }
   *{box-sizing:border-box}
   body{margin:0;font-family:"Segoe UI","Malgun Gothic",sans-serif;background:var(--bg);color:var(--text);line-height:1.5}
-  header{padding:16px 24px;background:linear-gradient(90deg,#0ea5e9,#2563eb);color:#fff;
+  header{padding:16px 24px;background:linear-gradient(100deg,#0e2144,#1e4079);color:#fff;
     display:flex;align-items:center;gap:14px;flex-wrap:wrap}
   header .ttl{margin-right:auto}
   header h1{margin:0;font-size:20px;letter-spacing:.5px}
@@ -32,9 +32,10 @@
   .wrap{display:grid;grid-template-columns:380px 1fr;gap:18px;padding:6px 18px 18px;max-width:1400px;margin:0 auto}
   @media(max-width:900px){.wrap{grid-template-columns:1fr}}
   .card{background:var(--panel);border:1px solid var(--line);border-radius:12px;padding:16px;margin-bottom:16px}
-  .card h2{margin:0 0 12px;font-size:14px;color:var(--accent);text-transform:uppercase;letter-spacing:.5px}
+  .card h2{margin:0 0 12px;font-size:15px;color:var(--accent);letter-spacing:.2px;font-weight:800;
+    padding-left:10px;border-left:4px solid #c0475a}
   label{display:block;font-size:12px;color:var(--muted);margin:10px 0 4px}
-  input,select{width:100%;padding:9px 10px;background:var(--panel2);border:1px solid var(--line);
+  input,select{width:100%;padding:9px 10px;background:#fff;border:1px solid var(--line);
     border-radius:8px;color:var(--text);font-size:14px}
   input:focus,select:focus{outline:none;border-color:var(--accent)}
   .row{display:grid;grid-template-columns:1fr 1fr 1fr;gap:8px}
@@ -42,26 +43,26 @@
   .chk{display:flex;align-items:center;gap:8px;margin-top:10px;font-size:13px;color:var(--text)}
   .chk input{width:auto}
   button{margin-top:16px;width:100%;padding:12px;background:var(--accent2);border:none;border-radius:8px;
-    color:#04210f;font-size:15px;font-weight:700;cursor:pointer}
+    color:#fff;font-size:15px;font-weight:700;cursor:pointer}
   button:hover{filter:brightness(1.08)}
   button.mini{width:auto;margin:0;padding:5px 10px;font-size:12px;background:var(--panel2);color:var(--text);border:1px solid var(--line);font-weight:600}
   .kpi{display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-bottom:16px}
   .kpi .box{background:var(--panel2);border:1px solid var(--line);border-radius:10px;padding:14px}
-  .kpi .box .n{font-size:26px;font-weight:800;color:#fff}
+  .kpi .box .n{font-size:26px;font-weight:800;color:var(--accent)}
   .kpi .box .l{font-size:12px;color:var(--muted);margin-top:2px}
   .bar{height:10px;background:var(--panel2);border-radius:6px;overflow:hidden;margin-top:6px}
   .bar > i{display:block;height:100%;background:var(--accent);width:0;transition:width .3s}
-  .bar.w > i{background:var(--warn)}
+  .bar.w > i{background:#c0475a}
   table{width:100%;border-collapse:collapse;font-size:13px;margin-top:8px}
   th,td{padding:7px 8px;border-bottom:1px solid var(--line);text-align:left}
   th{color:var(--muted);font-weight:600}
   td.r,th.r{text-align:right}
-  canvas{width:100%;height:auto;background:#0b1220;border-radius:10px;border:1px solid var(--line);cursor:grab;touch-action:none}
+  canvas{width:100%;height:auto;background:#eef3fb;border-radius:10px;border:1px solid var(--line);cursor:grab;touch-action:none}
   canvas:active{cursor:grabbing}
   .hint{font-size:11px;color:var(--muted);margin-top:4px}
   .tag{display:inline-block;font-size:11px;padding:2px 8px;border-radius:20px;background:var(--panel2);
     border:1px solid var(--line);color:var(--muted);margin-left:6px}
-  .warnmsg{background:#422006;border:1px solid var(--warn);color:#fde68a;padding:8px 12px;border-radius:8px;
+  .warnmsg{background:#fdf3e2;border:1px solid #e6b877;color:#8a5a12;padding:8px 12px;border-radius:8px;
     font-size:12px;margin-top:10px;display:none}
   .footer{font-size:11px;color:var(--muted);text-align:center;padding:8px 0 24px}
   .itemrow{display:grid;grid-template-columns:20px 1.4fr 1fr 1fr 1fr 1fr .9fr 26px;gap:5px;align-items:center;margin-top:6px}
@@ -74,15 +75,15 @@
   .leg span{display:inline-flex;align-items:center;gap:5px}
   .leg i{width:12px;height:12px;border-radius:3px;display:inline-block}
   .none{display:none!important}
-  .modal{position:fixed;inset:0;background:rgba(2,6,23,.97);z-index:50;display:flex;flex-direction:column}
-  .modalbar{display:flex;align-items:center;gap:10px;padding:10px 14px;background:#0b1220;border-bottom:1px solid var(--line);flex-wrap:wrap}
+  .modal{position:fixed;inset:0;background:rgba(247,249,253,.98);z-index:50;display:flex;flex-direction:column}
+  .modalbar{display:flex;align-items:center;gap:10px;padding:10px 14px;background:#fff;border-bottom:1px solid var(--line);flex-wrap:wrap}
   .modalbar #modalTitle{font-weight:700;color:var(--accent);font-size:14px;margin-right:auto}
   .modalbar .mtools{display:flex;align-items:center;gap:8px;flex-wrap:wrap}
   .modalbar label{margin:0;display:flex;align-items:center;gap:6px;color:var(--muted);font-size:12px}
   .modalbar input[type=range]{width:120px;padding:0}
-  .modal canvas{display:block;margin:auto;background:#0b1220;border:none;border-radius:0;cursor:grab;touch-action:none}
+  .modal canvas{display:block;margin:auto;background:#eef3fb;border:none;border-radius:0;cursor:grab;touch-action:none}
   .modalbar .close{background:var(--danger);color:#fff}
-  .openbtn{background:#0ea5e9!important;color:#04210f!important}
+  .openbtn{background:#1e4079!important;color:#fff!important}
 </style>
 </head>
 <body>
@@ -675,7 +676,7 @@ function drawScene(R){
   ctx.globalAlpha=1;
 
   // 컨테이너 와이어프레임 (앞쪽 프레임)
-  ctx.strokeStyle='rgba(148,163,184,.6)';ctx.lineWidth=1.2;
+  ctx.strokeStyle='rgba(21,48,92,.55)';ctx.lineWidth=1.2;
   const E=[[0,1],[1,2],[2,3],[3,0],[4,5],[5,6],[6,7],[7,4],[0,4],[1,5],[2,6],[3,7]];
   for(const [a,bq] of E){edge(c[a],c[bq]);}
   // 원점 축 라벨
