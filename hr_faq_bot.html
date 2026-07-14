@@ -1,0 +1,365 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>사내 FAQ 봇 · 복지·복리후생·온보딩</title>
+<style>
+  :root{
+    /* 밝은 테마 — 흰색 배경 + 남색 메인 */
+    --bg:#f1f5f9; --page:#ffffff; --panel:#f8fafc;
+    --navy:#1e3a8a; --navy2:#1e40af; --accent:#2563eb; --accent-soft:#dbeafe;
+    --text:#1e293b; --muted:#64748b; --line:#e2e8f0;
+    --botbg:#f1f5f9; --userbg:#1e3a8a; --usertext:#ffffff;
+    --warn-bg:#fffbeb; --warn-line:#f59e0b; --warn-text:#92400e;
+    --ok:#16a34a;
+  }
+  *{box-sizing:border-box}
+  html,body{height:100%}
+  body{margin:0;font-family:"Segoe UI","Malgun Gothic",sans-serif;background:var(--bg);color:var(--text);line-height:1.55}
+  .app{max-width:760px;margin:0 auto;height:100dvh;display:flex;flex-direction:column;background:var(--page);
+       box-shadow:0 0 40px rgba(15,23,42,.08)}
+  /* 헤더 */
+  header{background:linear-gradient(100deg,var(--navy),var(--navy2));color:#fff;padding:16px 20px;display:flex;align-items:center;gap:12px}
+  header .logo{width:40px;height:40px;border-radius:12px;background:rgba(255,255,255,.15);display:flex;align-items:center;justify-content:center;font-size:22px}
+  header h1{margin:0;font-size:18px;letter-spacing:.3px}
+  header p{margin:2px 0 0;font-size:12px;opacity:.85}
+  header .reset{margin-left:auto;background:rgba(255,255,255,.15);border:1px solid rgba(255,255,255,.25);color:#fff;
+       font-size:12px;font-weight:600;padding:7px 12px;border-radius:8px;cursor:pointer}
+  header .reset:hover{background:rgba(255,255,255,.28)}
+  /* 대화 영역 */
+  .chat{flex:1;overflow-y:auto;padding:18px 16px 8px;display:flex;flex-direction:column;gap:12px}
+  .msg{display:flex;gap:8px;max-width:100%}
+  .msg .av{flex:0 0 32px;width:32px;height:32px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:16px}
+  .msg.bot .av{background:var(--accent-soft)}
+  .bubble{padding:11px 14px;border-radius:14px;font-size:14px;word-break:break-word;max-width:78%}
+  .msg.bot .bubble{background:var(--botbg);border:1px solid var(--line);border-top-left-radius:4px}
+  .msg.user{flex-direction:row-reverse}
+  .msg.user .bubble{background:var(--userbg);color:var(--usertext);border-top-right-radius:4px}
+  .bubble a{color:var(--accent);font-weight:600}
+  .msg.user .bubble a{color:#bfdbfe}
+  .bubble b{color:var(--navy)}
+  .msg.user .bubble b{color:#fff}
+  .bubble .cat{font-size:11px;font-weight:700;color:var(--accent);text-transform:uppercase;letter-spacing:.4px;margin-bottom:3px}
+  /* 칩/버튼 */
+  .chips{display:flex;flex-wrap:wrap;gap:7px;margin-top:10px}
+  .chip{background:#fff;border:1px solid var(--line);color:var(--text);font-size:13px;padding:7px 12px;border-radius:18px;
+        cursor:pointer;font-weight:500;transition:.12s}
+  .chip:hover{border-color:var(--accent);background:var(--accent-soft);color:var(--navy)}
+  .chip.cat{background:var(--navy);color:#fff;border-color:var(--navy);font-weight:600}
+  .chip.cat:hover{background:var(--navy2)}
+  .label{font-size:12px;color:var(--muted);margin:12px 0 2px;font-weight:600}
+  /* 노동법 안내 박스 */
+  .lawbox{margin-top:10px;background:var(--warn-bg);border:1px solid var(--warn-line);border-radius:10px;padding:10px 12px;font-size:13px;color:var(--warn-text)}
+  .lawbox .links{display:flex;flex-direction:column;gap:4px;margin-top:7px}
+  .lawbox a{color:var(--navy)!important;font-weight:600}
+  /* 문의 안내 박스 */
+  .contact{margin-top:10px;background:var(--accent-soft);border:1px solid #bfdbfe;border-radius:10px;padding:10px 12px;font-size:13px;color:var(--navy)}
+  .contact b{color:var(--navy2)}
+  /* 피드백 */
+  .fb{display:flex;align-items:center;gap:8px;margin-top:9px;font-size:12px;color:var(--muted)}
+  .fb button{background:#fff;border:1px solid var(--line);border-radius:8px;padding:4px 10px;cursor:pointer;font-size:13px}
+  .fb button:hover{border-color:var(--accent)}
+  .fb .done{color:var(--ok);font-weight:600}
+  /* 입력창 */
+  .inputbar{border-top:1px solid var(--line);padding:12px 14px;display:flex;gap:8px;background:var(--page)}
+  .inputbar input{flex:1;padding:12px 14px;border:1px solid var(--line);border-radius:12px;font-size:14px;color:var(--text);outline:none}
+  .inputbar input:focus{border-color:var(--accent);box-shadow:0 0 0 3px var(--accent-soft)}
+  .inputbar button{background:var(--navy);color:#fff;border:none;border-radius:12px;padding:0 18px;font-size:14px;font-weight:700;cursor:pointer}
+  .inputbar button:hover{background:var(--navy2)}
+  .foot{font-size:11px;color:var(--muted);text-align:center;padding:6px 10px 10px;background:var(--page)}
+  @media(max-width:640px){
+    .app{box-shadow:none}
+    .bubble{max-width:84%}
+  }
+</style>
+</head>
+<body>
+<div class="app">
+  <header>
+    <div class="logo">🙋</div>
+    <div>
+      <h1>사내 FAQ 봇</h1>
+      <p>복지 · 복리후생 · 온보딩 · 휴가 · 근태 무엇이든 물어보세요</p>
+    </div>
+    <button class="reset" onclick="resetChat()">↺ 대화 초기화</button>
+  </header>
+
+  <div class="chat" id="chat"></div>
+
+  <div class="inputbar">
+    <input id="q" type="text" placeholder="예) 연차 어떻게 신청해요?  /  식대 지원되나요?" autocomplete="off">
+    <button onclick="onSend()">전송</button>
+  </div>
+  <div class="foot">🔒 입력 내용은 저장·전송되지 않고 이 브라우저 안에서만 처리됩니다 · 답변은 예시이며 실제 규정과 다를 수 있어요</div>
+</div>
+
+<script>
+/* ============================================================================
+   ⬇⬇⬇  여기(FAQ 배열) 내용만 우리 회사 규정으로 바꾸면 됩니다  ⬇⬇⬇
+   - q       : 대표 질문
+   - a       : 답변 (문장 안에 http... URL을 쓰면 자동으로 링크가 됩니다)
+   - keywords: 사람들이 다르게 말할 수 있는 단어들(동의어·줄임말)을 최대한 많이
+   - category: 복지·복리후생 / 휴가 / 급여·경비 / 온보딩 / 근태 / 기타
+   - law:true : 출산휴가·육아휴직 등 법 개정이 잦은 항목. 숫자 대신 "노동법 준수"
+                문구 + 공식 법령 링크가 자동으로 붙습니다. (구체적 일수는 넣지 마세요)
+   - top:true : 첫 화면 "자주 묻는 질문"에 노출
+   ============================================================================ */
+const CONTACT = { name:"경영운영실 김철수", ext:"888" };  // ← 담당자/내선 바꾸는 곳
+
+const FAQ = [
+  /* ---------- 복지 · 복리후생 ---------- */
+  { category:"복지·복리후생", top:true,
+    q:"식대(중식) 지원되나요?",
+    a:"점심 식대는 1일 1만원 한도로 지원되며, 법인카드 또는 개인카드 결제 후 경비 처리합니다. (예시)",
+    keywords:["식대","중식","점심","밥값","식사","점심지원","점심값","밥"] },
+  { category:"복지·복리후생",
+    q:"명절 선물이나 상여금이 있나요?",
+    a:"설·추석 명절에 상여금 또는 선물세트를 지급합니다. 지급 시점은 급여일에 맞춰 공지됩니다. (예시)",
+    keywords:["명절","선물","상여","상여금","설","추석","보너스","떡값"] },
+  { category:"복지·복리후생",
+    q:"경조사비(경조금) 지원 기준이 궁금해요.",
+    a:"본인/직계가족 경조사 시 경조금과 경조휴가가 지원됩니다. 사유별 금액·일수는 경영운영실에 신청서를 제출하면 안내받을 수 있습니다. (예시)",
+    keywords:["경조사","경조금","경조사비","결혼","축의금","부의금","조의금","장례","화환"] },
+  { category:"복지·복리후생",
+    q:"건강검진 지원되나요?",
+    a:"연 1회 종합건강검진을 지원합니다. 대상·제휴병원은 매년 상반기에 별도 공지됩니다. (예시)",
+    keywords:["건강검진","검진","건강","종합검진","병원","건강검진지원"] },
+  { category:"복지·복리후생",
+    q:"자기계발비나 동호회 지원이 있나요?",
+    a:"도서 구입비·온라인 강의 등 자기계발비를 분기별 한도 내에서 지원하며, 사내 동호회 활동비도 지원합니다. (예시)",
+    keywords:["자기계발","도서","교육비","강의","학원","동호회","자기계발비","책값"] },
+  { category:"복지·복리후생", top:true,
+    q:"통신비·교통비 지원이 있나요?",
+    a:"업무용 휴대폰 통신비와 출장 교통비를 지원합니다. 세부 한도는 경비 규정을 확인하세요. (예시)",
+    keywords:["통신비","핸드폰","휴대폰","교통비","차비","주유","통신","교통"] },
+
+  /* ---------- 휴가 ---------- */
+  { category:"휴가", top:true,
+    q:"연차는 며칠이고 어떻게 신청하나요?",
+    a:"연차는 사내 전자결재로 신청하며, 사용 희망일 최소 1~2일 전 상신을 권장합니다. 발생 일수는 근속기간에 따라 산정됩니다. (예시)",
+    keywords:["연차","휴가","연차신청","휴가신청","월차","연차사용","쉬는날","연차휴가"] },
+  { category:"휴가",
+    q:"반차·반반차도 쓸 수 있나요?",
+    a:"반차(4시간)·반반차(2시간) 사용이 가능하며, 연차와 동일하게 전자결재로 신청합니다. (예시)",
+    keywords:["반차","반반차","오전반차","오후반차","조퇴","반나절"] },
+  { category:"휴가",
+    q:"여름휴가(하계휴가)는 어떻게 되나요?",
+    a:"하계휴가는 연차에서 사용하며, 성수기 집중을 피하기 위해 부서별로 일정을 조율합니다. (예시)",
+    keywords:["여름휴가","하계휴가","휴가철","바캉스","여름"] },
+  { category:"휴가",
+    q:"아파서 병가를 쓰려면 어떻게 하나요?",
+    a:"병가는 진단서 등 증빙과 함께 경영운영실에 신청합니다. 유급/무급 여부는 규정에 따릅니다. (예시)",
+    keywords:["병가","아파서","입원","진단서","질병","몸살","아플때"] },
+  { category:"휴가", top:true, law:true,
+    q:"출산휴가는 며칠인가요?",
+    a:"출산휴가는 신청 시 경영운영실에 증빙(진단서 등)을 제출하면 안내해 드립니다.",
+    keywords:["출산휴가","출산","산전산후","출산 휴가","출산휴직"] },
+  { category:"휴가", law:true,
+    q:"육아휴직은 어떻게 쓰나요?",
+    a:"육아휴직 신청은 경영운영실을 통해 진행하며, 대상·기간·급여는 관련 법에 따릅니다.",
+    keywords:["육아휴직","육아","육아 휴직","아이","자녀","육아휴가"] },
+  { category:"휴가", law:true,
+    q:"배우자 출산휴가가 있나요?",
+    a:"배우자 출산휴가는 신청 시 경영운영실에서 안내합니다.",
+    keywords:["배우자출산","배우자 출산휴가","아내출산","남편출산","배우자휴가"] },
+
+  /* ---------- 급여 · 경비 ---------- */
+  { category:"급여·경비", top:true,
+    q:"급여일은 언제인가요?",
+    a:"급여는 매월 25일에 지급되며, 휴일인 경우 직전 영업일에 지급됩니다. (예시)",
+    keywords:["급여일","월급","급여","월급날","봉급","페이데이","급여지급일"] },
+  { category:"급여·경비",
+    q:"급여명세서는 어디서 확인하나요?",
+    a:"급여명세서는 급여일에 사내 시스템(또는 이메일)로 발송됩니다. 재발급은 경영운영실에 문의하세요. (예시)",
+    keywords:["급여명세서","명세서","월급명세","급여내역","명세","급여표"] },
+  { category:"급여·경비",
+    q:"법인카드·경비 처리는 어떻게 하나요?",
+    a:"업무 경비는 영수증을 첨부해 전자결재로 정산합니다. 법인카드 사용 내역은 매월 마감일까지 제출하세요. (예시)",
+    keywords:["법인카드","경비","경비처리","영수증","정산","비용처리","지출","경비정산"] },
+  { category:"급여·경비",
+    q:"야근수당(연장근로수당)이 나오나요?",
+    a:"사전 승인된 연장·야간·휴일 근로에 대해 수당을 지급합니다. 계산 기준은 관련 법에 따릅니다. (예시)",
+    keywords:["야근수당","연장수당","야근","연장근로","특근","잔업","초과근무","수당"] },
+
+  /* ---------- 온보딩(입사) ---------- */
+  { category:"온보딩", top:true,
+    q:"첫 출근 때 무엇을 준비해야 하나요?",
+    a:"신분증, 통장 사본, 4대보험 관련 서류를 준비해 주세요. 세부 목록은 입사 안내 메일로 발송됩니다. (예시)",
+    keywords:["첫출근","입사","준비물","입사서류","첫날","출근준비","신입","입사준비"] },
+  { category:"온보딩",
+    q:"4대보험·입사 서류는 어떻게 제출하나요?",
+    a:"입사 서류는 경영운영실에 제출하며, 4대보험은 입사일 기준으로 자동 신고됩니다. (예시)",
+    keywords:["4대보험","사대보험","보험","입사서류","제출서류","서류제출","건강보험","국민연금"] },
+  { category:"온보딩",
+    q:"사원증·노트북 등 장비는 언제 받나요?",
+    a:"사원증과 업무 장비(노트북 등)는 첫 출근일에 지급됩니다. 추가 장비는 경영운영실에 신청하세요. (예시)",
+    keywords:["사원증","장비","노트북","출입증","계정","비품","모니터","장비지급"] },
+  { category:"온보딩",
+    q:"근무시간과 유연근무제가 궁금해요.",
+    a:"기본 근무시간은 09:00~18:00(점심 1시간)이며, 유연근무제 적용 여부는 부서별로 안내됩니다. (예시)",
+    keywords:["근무시간","출근시간","유연근무","시차출퇴근","근로시간","몇시","탄력근무"] },
+
+  /* ---------- 근태 ---------- */
+  { category:"근태",
+    q:"재택근무가 가능한가요?",
+    a:"재택근무는 부서장 승인 후 사내 규정 범위 내에서 가능합니다. 신청은 전자결재로 진행합니다. (예시)",
+    keywords:["재택","재택근무","원격근무","집에서","리모트","재택신청"] },
+  { category:"근태",
+    q:"지각·근태 규정은 어떻게 되나요?",
+    a:"출퇴근은 사내 근태 시스템으로 기록합니다. 지각·조퇴 시 사유를 등록하고 필요 시 결재를 상신하세요. (예시)",
+    keywords:["지각","근태","출퇴근","조퇴","결근","근태규정","체크인","출근기록"] },
+  { category:"근태",
+    q:"출장 신청·정산은 어떻게 하나요?",
+    a:"출장은 사전 결재 후 진행하며, 교통·숙박비는 영수증 첨부로 정산합니다. (예시)",
+    keywords:["출장","출장비","출장신청","외근","숙박","출장정산"] },
+
+  /* ---------- 기타 ---------- */
+  { category:"기타",
+    q:"사무용품은 어떻게 신청하나요?",
+    a:"필요한 사무용품은 경영운영실에 신청하면 지급됩니다. 매월 정기 구매일이 있습니다. (예시)",
+    keywords:["사무용품","비품신청","문구","펜","사무용품신청","소모품","용품"] },
+];
+
+/* ============================================================================
+   ⬆⬆⬆  여기까지가 내용(FAQ) 영역 — 아래 코드는 손댈 필요 없습니다  ⬆⬆⬆
+   ============================================================================ */
+
+/* --- 개정 잦은 노동법 항목에 자동으로 붙는 안내 (law:true) --- */
+const LAW_NOTICE = "출산휴가·육아휴직 등은 <b>법 개정이 잦습니다</b>. 구체적인 일수·급여 기준은 노동법을 따르며, <b>회사는 노동법을 준수</b>합니다. 최신 기준은 아래 공식 자료에서 확인하세요.";
+const LAW_LINKS = [
+  { t:"근로기준법 (국가법령정보센터)", u:"https://www.law.go.kr/법령/근로기준법" },
+  { t:"남녀고용평등과 일·가정 양립 지원에 관한 법률", u:"https://www.law.go.kr/법령/남녀고용평등과일ㆍ가정양립지원에관한법률" },
+  { t:"고용노동부 홈페이지", u:"https://www.moel.go.kr" },
+];
+
+/* --- 텍스트 정규화 & 유사도 (한국어, 형태소분석기 없이) --- */
+const norm = s => (s||"").toLowerCase().replace(/[\s　]+/g,"").replace(/[.,!?~·…"'()\[\]\/\-]/g,"");
+function bigrams(s){ const set=new Set(); for(let i=0;i<s.length-1;i++) set.add(s.slice(i,i+2)); if(s.length===1) set.add(s); return set; }
+function jaccard(a,b){ if(a.size===0||b.size===0) return 0; let inter=0; for(const x of a) if(b.has(x)) inter++; return inter/(a.size+b.size-inter); }
+
+function scoreItem(item, qN, qBi){
+  const terms=[item.q, ...(item.keywords||[])];
+  let kwHit=0, kwScore=0, sim=0;
+  for(const t of terms){
+    const tn=norm(t);
+    if(tn && qN.includes(tn)){ kwHit++; kwScore += Math.min(3, Math.max(1, tn.length/2)); }
+    sim=Math.max(sim, jaccard(qBi, bigrams(tn)));
+  }
+  return { item, kwHit, sim, total:kwScore + sim*4 };
+}
+function rank(query){
+  const qN=norm(query), qBi=bigrams(qN);
+  return FAQ.map(it=>scoreItem(it,qN,qBi)).sort((a,b)=> b.total-a.total || b.sim-a.sim);
+}
+
+/* --- HTML 유틸 --- */
+function esc(s){ return (s||"").replace(/[&<>"]/g, c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c])); }
+function linkify(s){ return esc(s).replace(/(https?:\/\/[^\s]+)/g, u=>`<a href="${u}" target="_blank" rel="noopener">${u}</a>`); }
+
+/* --- 메시지 렌더링 --- */
+const chat=document.getElementById('chat');
+function scrollDown(){ chat.scrollTop=chat.scrollHeight; }
+
+function addUser(text){
+  const d=document.createElement('div'); d.className='msg user';
+  d.innerHTML=`<div class="av">🙂</div><div class="bubble">${esc(text)}</div>`;
+  chat.appendChild(d); scrollDown();
+}
+function addBot(html){
+  const d=document.createElement('div'); d.className='msg bot';
+  d.innerHTML=`<div class="av">🤖</div><div class="bubble">${html}</div>`;
+  chat.appendChild(d); scrollDown();
+  return d;
+}
+
+/* --- 답변 카드 --- */
+function answerHtml(item){
+  let h=`<div class="cat">${esc(item.category)}</div><b>${esc(item.q)}</b><br>${linkify(item.a)}`;
+  if(item.law){
+    h+=`<div class="lawbox">⚖️ ${LAW_NOTICE}<div class="links">`+
+       LAW_LINKS.map(l=>`<a href="${encodeURI(l.u)}" target="_blank" rel="noopener">🔗 ${esc(l.t)}</a>`).join("")+
+       `</div></div>`;
+  }
+  h+=feedbackHtml();
+  return h;
+}
+let fbSeq=0;
+function feedbackHtml(){
+  const id="fb"+(fbSeq++);
+  return `<div class="fb" id="${id}">도움이 됐나요?
+    <button onclick="fbYes('${id}')">👍</button>
+    <button onclick="fbNo('${id}')">👎</button></div>`;
+}
+function fbYes(id){ document.getElementById(id).innerHTML='<span class="done">✅ 도움이 되었다니 다행이에요!</span>'; scrollDown(); }
+function fbNo(id){
+  document.getElementById(id).innerHTML='<span class="done">🙏 더 정확한 안내가 필요하시군요.</span>'+contactHtml();
+  scrollDown();
+}
+function contactHtml(){
+  return `<div class="contact">💬 자세한 내용은 <b>${esc(CONTACT.name)} (내선번호 ${esc(CONTACT.ext)})</b>에게<br>메신저 또는 전화로 문의해 주세요.</div>`;
+}
+
+/* --- 질문 처리 --- */
+function ask(query){
+  addUser(query);
+  const results=rank(query);
+  const best=results[0];
+  const confident = best && (best.kwHit>0 || best.sim>=0.34);
+
+  if(confident){
+    addBot(answerHtml(best.item));
+  }else{
+    // fallback: 매칭 실패 + 비슷한 질문 Top 3 + 담당자 문의
+    const top3=results.slice(0,3).filter(r=>r.total>0);
+    let h=`🔎 <b>정확히 매칭되는 답변을 찾지 못했어요.</b><br>혹시 아래 질문 중 하나였을까요?`;
+    if(top3.length){
+      h+=`<div class="chips">`+
+         top3.map(r=>`<span class="chip" onclick="ask(this.dataset.q)" data-q="${esc(r.item.q)}">${esc(r.item.q)}</span>`).join("")+
+         `</div>`;
+    }
+    h+=contactHtml();
+    addBot(h);
+  }
+}
+
+/* --- 카테고리 목록 --- */
+function showCategory(cat){
+  addUser(cat+" 관련 질문");
+  const items=FAQ.filter(it=>it.category===cat);
+  let h=`<div class="cat">${esc(cat)}</div>이 항목에서 궁금한 걸 골라보세요 👇<div class="chips">`+
+        items.map(it=>`<span class="chip" onclick="ask(this.dataset.q)" data-q="${esc(it.q)}">${esc(it.q)}</span>`).join("")+
+        `</div>`;
+  addBot(h);
+}
+
+/* --- 입력 전송 --- */
+function onSend(){
+  const inp=document.getElementById('q');
+  const v=inp.value.trim();
+  if(!v) return;
+  inp.value="";
+  ask(v);
+}
+document.getElementById('q').addEventListener('keydown',e=>{ if(e.key==='Enter') onSend(); });
+
+/* --- 첫 화면(환영) --- */
+function welcome(){
+  const cats=[...new Set(FAQ.map(it=>it.category))];
+  const tops=FAQ.filter(it=>it.top).slice(0,5);
+  let h=`안녕하세요! 👋 <b>사내 FAQ 봇</b>이에요.<br>복지·복리후생·온보딩·휴가·근태 관련 질문에 답해드립니다.`+
+        `<div class="label">📂 카테고리로 찾기</div><div class="chips">`+
+        cats.map(c=>`<span class="chip cat" onclick="showCategory(this.dataset.c)" data-c="${esc(c)}">${esc(c)}</span>`).join("")+
+        `</div>`+
+        `<div class="label">🔥 자주 묻는 질문</div><div class="chips">`+
+        tops.map(it=>`<span class="chip" onclick="ask(this.dataset.q)" data-q="${esc(it.q)}">${esc(it.q)}</span>`).join("")+
+        `</div>`+
+        `<div class="label" style="margin-top:14px">아래 입력창에 자유롭게 질문을 적어도 돼요. 예: "식대 지원돼요?"</div>`;
+  addBot(h);
+}
+function resetChat(){ chat.innerHTML=""; welcome(); }
+
+welcome();
+</script>
+</body>
+</html>
