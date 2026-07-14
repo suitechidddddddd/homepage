@@ -1,0 +1,385 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>부산 신항 vs 북항 수입 마진 비교 계산기</title>
+<style>
+  :root{
+    --bg:#ffffff; --panel:#f6f9fd; --panel2:#eef3fb; --line:#d7e1f0;
+    --navy:#15305c; --navy2:#1e4079; --navy-deep:#0e2144;
+    --text:#1c2a45; --muted:#63728c;
+    --accent:#c0475a;        /* 강조: 톤다운된 붉은 계열 */
+    --accent-soft:#faedef;
+    --good:#15305c;          /* 양수 마진은 남색 */
+    --bad:#b23a48;
+  }
+  *{box-sizing:border-box}
+  body{margin:0;font-family:"Segoe UI","Malgun Gothic",sans-serif;background:var(--bg);
+    color:var(--text);line-height:1.5}
+  header{padding:22px 24px;background:linear-gradient(100deg,var(--navy-deep),var(--navy2));color:#fff}
+  header h1{margin:0;font-size:21px;letter-spacing:.2px}
+  header p{margin:6px 0 0;font-size:13px;opacity:.88}
+  .wrap{display:grid;grid-template-columns:410px 1fr;gap:20px;padding:20px;max-width:1520px;margin:0 auto}
+  @media(max-width:980px){.wrap{grid-template-columns:1fr}}
+  .card{background:var(--panel);border:1px solid var(--line);border-radius:14px;padding:18px;margin-bottom:16px}
+  .card h2{margin:0 0 14px;font-size:17px;color:var(--navy);letter-spacing:.2px;
+    font-weight:800;padding-left:11px;border-left:4px solid var(--accent)}
+  label{display:block;font-size:12px;color:var(--muted);margin:10px 0 4px}
+  input,select{width:100%;padding:9px 10px;background:#fff;border:1px solid var(--line);
+    border-radius:8px;color:var(--text);font-size:14px}
+  input:focus,select:focus{outline:none;border-color:var(--navy2);box-shadow:0 0 0 3px rgba(30,64,121,.12)}
+  input[type=text]{text-align:right;font-variant-numeric:tabular-nums}
+  .row2{display:grid;grid-template-columns:1fr 1fr;gap:10px}
+  .auto{margin-top:10px;padding:9px 11px;background:#fff;border:1px dashed var(--line);
+    border-radius:8px;font-size:13px;color:var(--muted);display:flex;justify-content:space-between}
+  .auto b{color:var(--navy);font-variant-numeric:tabular-nums}
+  /* 환율 고시 박스 */
+  .fxnote{margin-top:8px;padding:10px 12px;background:var(--accent-soft);border:1px solid #f3c9cf;
+    border-radius:8px;font-size:12px}
+  .fxnote .t{color:var(--accent);font-weight:700;display:flex;align-items:center;gap:5px}
+  .fxnote .v{display:flex;justify-content:space-between;align-items:center;margin-top:5px}
+  .fxnote .v b{font-size:16px;color:var(--navy);font-variant-numeric:tabular-nums}
+  .fxnote .apply{padding:5px 12px;background:var(--accent);color:#fff;border:none;border-radius:6px;
+    font-size:12px;font-weight:700;cursor:pointer}
+  .fxnote .apply:hover{background:#b81a30}
+  .fxnote .src{color:var(--muted);font-size:10.5px;margin-top:4px}
+  button{cursor:pointer}
+  .addbtn{margin-top:12px;width:100%;padding:10px;background:#fff;color:var(--accent);
+    border:1px dashed var(--accent);border-radius:8px;font-size:13px;font-weight:700}
+  .addbtn:hover{background:var(--accent-soft)}
+  .extra{display:grid;grid-template-columns:1.4fr 1fr 1.2fr 30px;gap:6px;align-items:center;margin-top:8px}
+  .extra input,.extra select{padding:7px 8px;font-size:12px}
+  .extra .del{background:transparent;border:none;color:var(--accent);font-size:16px;font-weight:700;padding:0}
+  .exhdr{display:grid;grid-template-columns:1.4fr 1fr 1.2fr 30px;gap:6px;font-size:10px;
+    color:var(--muted);margin-top:6px}
+  /* results */
+  .compare{display:grid;grid-template-columns:1fr 1fr;gap:16px}
+  @media(max-width:560px){.compare{grid-template-columns:1fr}}
+  .port{background:var(--panel);border:1px solid var(--line);border-radius:14px;padding:20px;position:relative;transition:.2s}
+  .port.better{border-color:var(--accent);box-shadow:0 0 0 1px var(--accent),0 10px 30px rgba(216,31,58,.12)}
+  .port.loss{border-color:var(--bad);background:linear-gradient(180deg,#fdeef0,var(--panel))}
+  .port h3{margin:0 0 2px;font-size:18px;color:var(--navy-deep)}
+  .port .sub{font-size:12px;color:var(--muted);margin-bottom:14px}
+  .badge{position:absolute;top:16px;right:16px;background:var(--accent);color:#fff;font-size:12px;
+    font-weight:800;padding:5px 12px;border-radius:20px;letter-spacing:.3px}
+  .badge.lossbadge{background:var(--bad)}
+  .marginbig{font-size:30px;font-weight:800;margin:2px 0}
+  .marginbig.pos{color:var(--good)} .marginbig.neg{color:var(--bad)}
+  .mrow{display:flex;justify-content:space-between;font-size:13px;padding:7px 0;border-bottom:1px solid var(--line)}
+  .mrow span:last-child{font-variant-numeric:tabular-nums;font-weight:600}
+  .mrow.sub{color:var(--muted);font-size:12px;padding:4px 0 4px 12px;border-bottom:none}
+  .mrow.sub span:last-child{font-weight:500}
+  .sec{margin-top:14px;font-size:11px;color:var(--navy2);text-transform:uppercase;letter-spacing:.5px;font-weight:800}
+  .summary{background:linear-gradient(100deg,var(--navy-deep),var(--navy2));color:#fff;border-radius:14px;
+    padding:20px 22px;margin-top:16px;font-size:15px}
+  .summary b{font-size:20px;color:#ffd7dc}
+  .summary .win{color:#ffd7dc}
+  .summary.tie{background:var(--panel2);color:var(--text);border:1px solid var(--line)}
+  .summary.tie b{color:var(--navy)}
+  .foot{font-size:11px;color:var(--muted);text-align:center;padding:8px 0 22px}
+</style>
+</head>
+<body>
+<header>
+  <h1>⚓ 부산 신항 vs 북항 수입 마진 비교 계산기</h1>
+  <p>입력값을 바꾸면 실시간으로 신항·북항 마진을 나란히 비교합니다. 금액 단위: 원</p>
+</header>
+
+<div class="wrap">
+  <!-- ============ LEFT: INPUTS ============ -->
+  <div>
+    <div class="card">
+      <h2>1. 매출 청구 단가</h2>
+      <div class="row2">
+        <div><label>청구 단가 (USD/톤)</label><input id="usd" type="text" inputmode="decimal" value="120"></div>
+        <div><label>환율 (원/USD)</label><input id="fx" type="text" inputmode="decimal" value="1,380"></div>
+      </div>
+      <div class="fxnote">
+        <div class="t" id="fxTitle">📌 오늘자 외환은행 최초고시 매매기준율</div>
+        <div class="v"><b id="fxBase">불러오는 중…</b>
+          <button class="apply" id="applyFx" style="display:none" onclick="applyFx()">이 값 적용</button></div>
+        <div class="src" id="fxSrc"></div>
+      </div>
+      <div class="auto"><span>톤당 매출</span><b id="perTonRev">– 원</b></div>
+    </div>
+
+    <div class="card">
+      <h2>2. 물량 정보</h2>
+      <div class="row2">
+        <div><label>월 물량 (톤)</label><input id="qty" type="text" inputmode="decimal" value="2,000"></div>
+        <div><label>컨테이너당 적재량 (톤)</label><input id="perCont" type="text" inputmode="decimal" value="25"></div>
+      </div>
+      <div class="row2">
+        <div><label>탱크로리 기본중량 (톤)</label><input id="lorryTon" type="text" inputmode="decimal" value="20"></div>
+        <div><label>탱크로리 운송단가 (원/톤)</label><input id="lorryRate" type="text" inputmode="decimal" value="8,000"></div>
+      </div>
+    </div>
+
+    <div class="card">
+      <h2>3. 매입 원가</h2>
+      <label>작업료 (원/톤 · 디베닝)</label><input id="work" type="text" inputmode="decimal" value="15,000">
+      <div class="row2">
+        <div><label>신항 셔틀료 (원/대)</label><input id="shuttleSin" type="text" inputmode="decimal" value="120,000"></div>
+        <div><label>북항 셔틀료 (원/대)</label><input id="shuttleBuk" type="text" inputmode="decimal" value="90,000"></div>
+      </div>
+    </div>
+
+    <div class="card">
+      <h2>4. 기타 비용</h2>
+      <div class="exhdr"><span>항목명</span><span>금액</span><span>단위</span><span></span></div>
+      <div id="extras"></div>
+      <button class="addbtn" onclick="addExtra()">＋ 항목 추가</button>
+    </div>
+  </div>
+
+  <!-- ============ RIGHT: RESULTS ============ -->
+  <div>
+    <div class="compare">
+      <div class="port" id="cardSin">
+        <div class="badge" id="badgeSin" style="display:none"></div>
+        <h3>🌊 신항</h3><div class="sub">부산 신항 (New Port)</div>
+        <div id="bodySin"></div>
+      </div>
+      <div class="port" id="cardBuk">
+        <div class="badge" id="badgeBuk" style="display:none"></div>
+        <h3>🏙️ 북항</h3><div class="sub">부산 북항 (North Port)</div>
+        <div id="bodyBuk"></div>
+      </div>
+    </div>
+    <div class="summary" id="summary"></div>
+    <div class="foot">셔틀료 단가만 신항/북항이 다르며, 그 외 조건은 동일하게 계산됩니다.</div>
+  </div>
+</div>
+
+<script>
+/* ================= 숫자 포맷 유틸 ================= */
+function toNum(str){
+  if(str==null) return 0;
+  const s=String(str).replace(/[^0-9.]/g,'');
+  const parts=s.split('.');
+  const norm = parts.length>1 ? parts[0]+'.'+parts.slice(1).join('') : parts[0];
+  const n=parseFloat(norm);
+  return isNaN(n)?0:n;
+}
+function comma(numStr){
+  if(numStr==='') return '';
+  const neg=String(numStr).startsWith('-');
+  let s=String(numStr).replace(/[^0-9.]/g,'');
+  const parts=s.split('.');
+  let int=parts[0].replace(/^0+(?=\d)/,'');
+  int=int.replace(/\B(?=(\d{3})+(?!\d))/g,',');
+  let out=int===''?'0':int;
+  if(parts.length>1) out+='.'+parts.slice(1).join('').slice(0,4);
+  return (neg?'-':'')+out;
+}
+function formatInput(el){
+  const old=el.value;
+  const pos=el.selectionStart;
+  const digitsBefore=(old.slice(0,pos).match(/[0-9.]/g)||[]).length;
+  const formatted=comma(old);
+  el.value=formatted;
+  let cnt=0,newPos=formatted.length;
+  for(let i=0;i<formatted.length;i++){
+    if(/[0-9.]/.test(formatted[i])) cnt++;
+    if(cnt>=digitsBefore){ newPos=i+1; break; }
+  }
+  if(digitsBefore===0) newPos=0;
+  el.setSelectionRange(newPos,newPos);
+}
+function won(n){ return Math.round(n).toLocaleString('ko-KR')+' 원'; }
+function pct(n){ return (isFinite(n)?n.toFixed(1):'0.0')+' %'; }
+function tonWon(n){ return Math.round(n).toLocaleString('ko-KR')+' 원/톤'; }
+
+/* ================= 기타비용 UI ================= */
+const UNITS=[
+  {v:'month', t:'원/월(고정)'},
+  {v:'ton',   t:'원/톤'},
+  {v:'cont',  t:'원/대(컨테이너)'},
+  {v:'lorry', t:'원/대(탱크로리)'},
+];
+function addExtra(name='', amount='', unit='month'){
+  const div=document.createElement('div');
+  div.className='extra';
+  div.innerHTML=`
+    <input type="text" placeholder="항목명" value="${name}" data-f="name">
+    <input type="text" inputmode="decimal" placeholder="0" value="${amount}" data-f="amount">
+    <select data-f="unit">${UNITS.map(u=>`<option value="${u.v}" ${u.v===unit?'selected':''}>${u.t}</option>`).join('')}</select>
+    <button class="del" title="삭제">✕</button>`;
+  div.querySelector('[data-f="amount"]').addEventListener('input',e=>{formatInput(e.target);calc();});
+  div.querySelector('[data-f="name"]').addEventListener('input',calc);
+  div.querySelector('[data-f="unit"]').addEventListener('change',calc);
+  div.querySelector('.del').addEventListener('click',()=>{div.remove();calc();});
+  document.getElementById('extras').appendChild(div);
+  calc();
+}
+function readExtras(){
+  return [...document.querySelectorAll('#extras .extra')].map(r=>({
+    name:r.querySelector('[data-f="name"]').value||'기타비용',
+    amount:toNum(r.querySelector('[data-f="amount"]').value),
+    unit:r.querySelector('[data-f="unit"]').value,
+  }));
+}
+
+/* ================= 계산 ================= */
+function computePort(base, shuttleRate){
+  const {qty,contN,lorryN,revenue,workTotal,lorryTotal,extras}=base;
+  const shuttleTotal=contN*shuttleRate;
+  let extraTotal=0;
+  const extraLines=extras.map(e=>{
+    let v=0;
+    if(e.unit==='month') v=e.amount;
+    else if(e.unit==='ton') v=e.amount*qty;
+    else if(e.unit==='cont') v=e.amount*contN;
+    else if(e.unit==='lorry') v=e.amount*lorryN;
+    extraTotal+=v;
+    return {name:e.name,value:v};
+  });
+  const cost=workTotal+shuttleTotal+lorryTotal+extraTotal;
+  const margin=revenue-cost;
+  return {
+    contN,lorryN,revenue,workTotal,shuttleTotal,lorryTotal,extraLines,extraTotal,cost,
+    margin, marginPct: revenue>0?margin/revenue*100:0,
+    perTon: qty>0?margin/qty:0, yearly: margin*12
+  };
+}
+function calc(){
+  const usd=toNum(usd_.value), fx=toNum(fx_.value);
+  const qty=toNum(qty_.value), perCont=toNum(perCont_.value);
+  const lorryTon=toNum(lorryTon_.value), lorryRate=toNum(lorryRate_.value);
+  const work=toNum(work_.value);
+  const shuttleSin=toNum(shuttleSin_.value), shuttleBuk=toNum(shuttleBuk_.value);
+  const extras=readExtras();
+
+  document.getElementById('perTonRev').textContent=won(usd*fx);
+
+  const contN = perCont>0 ? Math.ceil(qty/perCont) : 0;
+  const lorryN = lorryTon>0 ? Math.ceil(qty/lorryTon) : 0;
+  const revenue = qty*usd*fx;
+  const workTotal = qty*work;
+  const lorryTotal = lorryN*lorryTon*lorryRate;
+
+  const base={qty,contN,lorryN,revenue,workTotal,lorryTotal,extras};
+  const sin=computePort(base,shuttleSin);
+  const buk=computePort(base,shuttleBuk);
+
+  renderPort('Sin',sin, sin.margin>=buk.margin);
+  renderPort('Buk',buk, buk.margin>=sin.margin);
+  renderSummary(sin,buk);
+}
+function renderPort(key,r,isBetter){
+  const card=document.getElementById('card'+key);
+  const badge=document.getElementById('badge'+key);
+  const loss=r.margin<0;
+  card.classList.toggle('better', isBetter && !loss);
+  card.classList.toggle('loss', loss);
+  if(loss){ badge.style.display='block'; badge.className='badge lossbadge'; badge.textContent='⚠ 적자'; }
+  else if(isBetter){ badge.style.display='block'; badge.className='badge'; badge.textContent='🌟 Better'; }
+  else { badge.style.display='none'; }
+
+  document.getElementById('body'+key).innerHTML=`
+    <div class="mrow"><span>컨테이너 수</span><span>${r.contN.toLocaleString()} 대</span></div>
+    <div class="mrow"><span>탱크로리 수</span><span>${r.lorryN.toLocaleString()} 대</span></div>
+    <div class="sec">매출</div>
+    <div class="mrow"><span>월 매출</span><span>${won(r.revenue)}</span></div>
+    <div class="sec">매입 원가 내역</div>
+    <div class="mrow sub"><span>작업료</span><span>${won(r.workTotal)}</span></div>
+    <div class="mrow sub"><span>셔틀료</span><span>${won(r.shuttleTotal)}</span></div>
+    <div class="mrow sub"><span>탱크로리</span><span>${won(r.lorryTotal)}</span></div>
+    ${r.extraLines.map(e=>`<div class="mrow sub"><span>${e.name}</span><span>${won(e.value)}</span></div>`).join('')}
+    <div class="mrow"><span>매입 원가 합계</span><span>${won(r.cost)}</span></div>
+    <div class="sec">마진</div>
+    <div class="marginbig ${r.margin>=0?'pos':'neg'}">${won(r.margin)}</div>
+    <div class="mrow"><span>마진율</span><span>${pct(r.marginPct)}</span></div>
+    <div class="mrow"><span>톤당 마진</span><span>${tonWon(r.perTon)}</span></div>
+    <div class="mrow"><span>연간 마진</span><span>${won(r.yearly)}</span></div>`;
+}
+function renderSummary(sin,buk){
+  const el=document.getElementById('summary');
+  const diff=Math.abs(sin.margin-buk.margin);
+  if(Math.round(diff)===0){
+    el.className='summary tie';
+    el.innerHTML='두 항구의 월 마진이 동일합니다. 연간 차액 <b>0 원</b>';
+    return;
+  }
+  const win = sin.margin>buk.margin ? '신항' : '북항';
+  el.className='summary';
+  el.innerHTML=`✅ <span class="win">${win}</span>이(가) 월 <b>${won(diff)}</b> 더 유리합니다. &nbsp;·&nbsp; 연간 차액 <b>${won(diff*12)}</b>`;
+}
+
+/* ================= 오늘자 매매기준율 불러오기 ================= */
+let fxBaseValue=null;
+function applyFx(){
+  if(fxBaseValue==null) return;
+  fx_.value=comma(String(fxBaseValue));
+  calc();
+}
+// 여러 소스를 순서대로 시도. 각 소스는 {value, title, src} 반환(실패 시 예외)
+const FX_SOURCES=[
+  // 1순위: 두나무(하나은행 제공) 매매기준율 basePrice — '외환은행 매매기준율' 그 자체
+  async ()=>{
+    const r=await fetch('https://quotation-api-cdn.dunamu.com/v1/forex/recent?codes=FRX.KRWUSD',{cache:'no-store'});
+    if(!r.ok) throw 0;
+    const o=(await r.json())[0];
+    if(!o||!o.basePrice) throw 0;
+    const date=(o.date||'').replace(/-/g,'.'), time=(o.time||'').slice(0,5);
+    return {value:o.basePrice, title:'📌 오늘자 외환은행 최초고시 매매기준율',
+      src:`${date} ${time} 기준 · 제공: ${o.provider||'하나은행'} (USD/KRW 매매기준율)`};
+  },
+  // 2순위: 네이버 금융 매매기준율 (USDKRW)
+  async ()=>{
+    const r=await fetch('https://api.manana.kr/exchange/rate/KRW/USD.json',{cache:'no-store'});
+    if(!r.ok) throw 0;
+    const d=await r.json();
+    const v=Array.isArray(d)?d[0].rate:d.rate;
+    if(!v) throw 0;
+    return {value:Math.round(v*100)/100, title:'📌 오늘자 USD/KRW 매매기준율',
+      src:'제공: manana.kr (네이버 금융 매매기준율 연동)'};
+  },
+  // 3순위: 공개 시세 API (참고용)
+  async ()=>{
+    const r=await fetch('https://open.er-api.com/v6/latest/USD',{cache:'no-store'});
+    if(!r.ok) throw 0;
+    const d=await r.json();
+    const v=d.rates&&d.rates.KRW; if(!v) throw 0;
+    const date=d.time_last_update_utc?new Date(d.time_last_update_utc).toLocaleDateString('ko-KR'):'';
+    return {value:Math.round(v*100)/100, title:'📌 오늘자 USD/KRW 환율 (참고 시세)',
+      src:`${date} 기준 · 제공: open.er-api · 은행 최초고시값과 다소 차이가 있을 수 있습니다`};
+  },
+];
+async function loadFx(){
+  const box=document.getElementById('fxBase');
+  const src=document.getElementById('fxSrc');
+  const title=document.getElementById('fxTitle');
+  const btn=document.getElementById('applyFx');
+  for(const source of FX_SOURCES){
+    try{
+      const {value,title:t,src:s}=await source();
+      fxBaseValue=value;
+      box.textContent=comma(String(value))+' 원';
+      title.textContent=t;
+      src.textContent=s;
+      btn.style.display='inline-block';
+      return;
+    }catch(e){ /* 다음 소스 시도 */ }
+  }
+  box.textContent='불러오기 실패';
+  src.textContent='네트워크 문제로 자동 조회 실패 — 환율을 직접 입력하세요';
+}
+
+/* ================= 초기화 & 이벤트 바인딩 ================= */
+const $=id=>document.getElementById(id);
+const usd_=$('usd'),fx_=$('fx'),qty_=$('qty'),perCont_=$('perCont'),
+      lorryTon_=$('lorryTon'),lorryRate_=$('lorryRate'),work_=$('work'),
+      shuttleSin_=$('shuttleSin'),shuttleBuk_=$('shuttleBuk');
+
+[usd_,fx_,qty_,perCont_,lorryTon_,lorryRate_,work_,shuttleSin_,shuttleBuk_].forEach(el=>{
+  el.addEventListener('input',e=>{ formatInput(e.target); calc(); });
+});
+
+addExtra('보관료',500,'ton');
+calc();
+loadFx();
+</script>
+</body>
+</html>
